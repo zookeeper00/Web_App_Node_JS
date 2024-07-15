@@ -1,44 +1,69 @@
 steps:
+  # Step 1: Build Backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'backend'
-    args: ['build', '-t', '${_IMAGE_PATH}/backend:latest', '.']
-
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker build -t ${_IMAGE_PATH}/backend:$COMMIT_SHA .
+        
+  # Step 2: Push Backend Docker image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${_IMAGE_PATH}/backend:latest']
+    args:
+      - 'push'
+      - '${_IMAGE_PATH}/backend:$COMMIT_SHA'
 
+  # Step 3: Build Frontend Docker image
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'frontend'
-    args: ['build', '-t', '${_IMAGE_PATH}/frontend:latest', '.']
-
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker build -t ${_IMAGE_PATH}/frontend:$COMMIT_SHA .
+        
+  # Step 4: Push Frontend Docker image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${_IMAGE_PATH}/frontend:latest']
+    args:
+      - 'push'
+      - '${_IMAGE_PATH}/frontend:$COMMIT_SHA'
 
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'deploy-backend-service'
+  # Step 5: Deploy Backend Docker image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
-    args: ['-c', 'gcloud run deploy backend-service --image ${_IMAGE_PATH}/backend:latest --platform managed --region ${_REGION} --allow-unauthenticated --set-env-vars DB_HOST=${_DB_HOST},DB_USER=${_DB_USER},DB_PASSWORD=${_DB_PASSWORD},DB_NAME=${_DB_NAME}']
+    args:
+      - '-c'
+      - |
+        gcloud run deploy backend-service \
+        --image ${_IMAGE_PATH}/backend:$COMMIT_SHA \
+        --region asia-south1 \
+        --platform managed \
+        --allow-unauthenticated \
+        --set-env-vars DB_HOST=${_DB_HOST},DB_USER=${_DB_USER},DB_PASSWORD=${_DB_PASSWORD},DB_NAME=${_DB_NAME}
 
-  - name: 'gcr.io/cloud-builders/gcloud'
-    id: 'deploy-frontend-service'
+  # Step 6: Deploy Frontend Docker image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
-    args: ['-c', 'gcloud run deploy frontend-service --image ${_IMAGE_PATH}/frontend:latest --platform managed --region ${_REGION} --allow-unauthenticated']
+    args:
+      - '-c'
+      - |
+        gcloud run deploy frontend-service \
+        --image ${_IMAGE_PATH}/frontend:$COMMIT_SHA \
+        --region asia-south1 \
+        --platform managed \
+        --allow-unauthenticated
 
 images:
-  - '${_IMAGE_PATH}/backend:latest'
-  - '${_IMAGE_PATH}/frontend:latest'
+  # Specify the Docker images to be produced and pushed
+  - '${_IMAGE_PATH}/backend:$COMMIT_SHA'
+  - '${_IMAGE_PATH}/frontend:$COMMIT_SHA'
 
-options:
-  machineType: 'E2_MEDIUM'
-
-logsBucket: gs://cloubuild-logs
+logsBucket: gs://cloudbuild-logs
 
 substitutions:
-  _REGION: asia-south1
-  _PROJECT_ID: vs-code-proj
-  _REPO: Web_App_Node_JS
-  _IMAGE_PATH: asia-south1-docker.pkg.dev/${_PROJECT_ID}/${_REPO}
+  _IMAGE_PATH: asia-south1-docker.pkg.dev/vs-code-proj/Web_App_Node_JS
   _DB_HOST: 34.71.152.233
   _DB_USER: root
   _DB_PASSWORD: Sathi@1993
   _DB_NAME: GenAI
-  _BUCKET: gs://gen-ai-bucket15
