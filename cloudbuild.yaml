@@ -30,6 +30,8 @@ images:
 options:
   machineType: 'E2_MEDIUM'
 
+logsBucket: gs://cloubuild-logs
+
 substitutions:
   _REGION: asia-south1
   _PROJECT_ID: vs-code-proj
