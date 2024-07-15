@@ -1,0 +1,42 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    dir: 'backend'
+    args: ['build', '-t', '${_IMAGE_PATH}/backend:latest', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE_PATH}/backend:latest']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    dir: 'frontend'
+    args: ['build', '-t', '${_IMAGE_PATH}/frontend:latest', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE_PATH}/frontend:latest']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-backend-service'
+    entrypoint: 'bash'
+    args: ['-c', 'gcloud run deploy backend-service --image ${_IMAGE_PATH}/backend:latest --platform managed --region ${_REGION} --allow-unauthenticated --set-env-vars DB_HOST=${_DB_HOST},DB_USER=${_DB_USER},DB_PASSWORD=${_DB_PASSWORD},DB_NAME=${_DB_NAME}']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-frontend-service'
+    entrypoint: 'bash'
+    args: ['-c', 'gcloud run deploy frontend-service --image ${_IMAGE_PATH}/frontend:latest --platform managed --region ${_REGION} --allow-unauthenticated']
+
+images:
+  - '${_IMAGE_PATH}/backend:latest'
+  - '${_IMAGE_PATH}/frontend:latest'
+
+options:
+  machineType: 'E2_MEDIUM'
+
+substitutions:
+  _REGION: asia-south1
+  _PROJECT_ID: vs-code-proj
+  _REPO: Web_App_Node_JS
+  _IMAGE_PATH: asia-south1-docker.pkg.dev/${_PROJECT_ID}/${_REPO}
+  _DB_HOST: 34.71.152.233
+  _DB_USER: root
+  _DB_PASSWORD: Sathi@1993
+  _DB_NAME: GenAI
+  _BUCKET: gs://gen-ai-bucket15
