@@ -39,6 +39,5 @@ app.post('/api/login', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(Backend service listening at http://localhost:${port});
+  console.log(`Backend service listening at http://localhost:${port}`);
 });
-
