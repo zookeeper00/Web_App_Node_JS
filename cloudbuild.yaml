@@ -58,7 +58,7 @@ images:
   - 'gcr.io/vs-code-proj/webapp/backend:$COMMIT_SHA'
   - 'gcr.io/vs-code-proj/webapp/frontend:$COMMIT_SHA'
 
-logsBucket: gs://cloudbuild-logs
+logsBucket: gs://cloubuild-logs
 
 substitutions:
   _REGION: asia-south1
