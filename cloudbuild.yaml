@@ -64,8 +64,6 @@ options:
 logsBucket: gs://cloudbuild-logs
 
 substitutions:
-  _IMAGE_PATH: asia-south1-docker.pkg.dev/vs-code-proj/Web_App_Node_JS
-  _TAG: $COMMIT_SHA
   _REGION: asia-south1
   _DB_HOST: 34.71.152.233
   _DB_USER: root
