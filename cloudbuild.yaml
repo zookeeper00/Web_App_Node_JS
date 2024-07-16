@@ -6,13 +6,13 @@ steps:
     args:
       - '-c'
       - |
-        docker build -t ${_IMAGE_PATH}/backend:${_TAG} .
+        docker build -t gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/backend:$COMMIT_SHA -f Dockerfile .
 
-  # Step 2: Push Backend Docker image to Container Registry
+  # Step 2: Push Backend Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '${_IMAGE_PATH}/backend:${_TAG}'
+      - 'gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/backend:$COMMIT_SHA'
 
   # Step 3: Build Frontend Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -21,13 +21,13 @@ steps:
     args:
       - '-c'
       - |
-        docker build -t ${_IMAGE_PATH}/frontend:${_TAG} .
+        docker build -t gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/frontend:$COMMIT_SHA -f Dockerfile .
 
-  # Step 4: Push Frontend Docker image to Container Registry
+  # Step 4: Push Frontend Docker image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '${_IMAGE_PATH}/frontend:${_TAG}'
+      - 'gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/frontend:$COMMIT_SHA'
 
   # Step 5: Deploy Backend Docker image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -36,7 +36,7 @@ steps:
       - '-c'
       - |
         gcloud run deploy backend-service \
-        --image ${_IMAGE_PATH}/backend:${_TAG} \
+        --image gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/backend:$COMMIT_SHA \
         --region ${_REGION} \
         --platform managed \
         --allow-unauthenticated \
@@ -49,14 +49,14 @@ steps:
       - '-c'
       - |
         gcloud run deploy frontend-service \
-        --image ${_IMAGE_PATH}/frontend:${_TAG} \
+        --image gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/frontend:$COMMIT_SHA \
         --region ${_REGION} \
         --platform managed \
         --allow-unauthenticated
 
 images:
-  - '${_IMAGE_PATH}/backend:${_TAG}'
-  - '${_IMAGE_PATH}/frontend:${_TAG}'
+  - 'gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/backend:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/github.com/zookeeper00/Web_App_Node_JS/frontend:$COMMIT_SHA'
 
 options:
   machineType: 'E2_MEDIUM'
