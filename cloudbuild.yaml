@@ -6,13 +6,13 @@ steps:
     args:
       - '-c'
       - |
-        docker build -t ${_IMAGE_PATH}/backend:$COMMIT_SHA .
-        
+        docker build -t ${_IMAGE_PATH}/backend:${SHORT_SHA} .
+
   # Step 2: Push Backend Docker image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '${_IMAGE_PATH}/backend:$COMMIT_SHA'
+      - '${_IMAGE_PATH}/backend:${SHORT_SHA}'
 
   # Step 3: Build Frontend Docker image
   - name: 'gcr.io/cloud-builders/docker'
@@ -21,13 +21,13 @@ steps:
     args:
       - '-c'
       - |
-        docker build -t ${_IMAGE_PATH}/frontend:$COMMIT_SHA .
-        
+        docker build -t ${_IMAGE_PATH}/frontend:${SHORT_SHA} .
+
   # Step 4: Push Frontend Docker image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '${_IMAGE_PATH}/frontend:$COMMIT_SHA'
+      - '${_IMAGE_PATH}/frontend:${SHORT_SHA}'
 
   # Step 5: Deploy Backend Docker image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -36,7 +36,7 @@ steps:
       - '-c'
       - |
         gcloud run deploy backend-service \
-        --image ${_IMAGE_PATH}/backend:$COMMIT_SHA \
+        --image ${_IMAGE_PATH}/backend:${SHORT_SHA} \
         --region asia-south1 \
         --platform managed \
         --allow-unauthenticated \
@@ -49,15 +49,15 @@ steps:
       - '-c'
       - |
         gcloud run deploy frontend-service \
-        --image ${_IMAGE_PATH}/frontend:$COMMIT_SHA \
+        --image ${_IMAGE_PATH}/frontend:${SHORT_SHA} \
         --region asia-south1 \
         --platform managed \
         --allow-unauthenticated
 
 images:
   # Specify the Docker images to be produced and pushed
-  - '${_IMAGE_PATH}/backend:$COMMIT_SHA'
-  - '${_IMAGE_PATH}/frontend:$COMMIT_SHA'
+  - '${_IMAGE_PATH}/backend:${SHORT_SHA}'
+  - '${_IMAGE_PATH}/frontend:${SHORT_SHA}'
 
 logsBucket: gs://cloudbuild-logs
 
@@ -67,3 +67,4 @@ substitutions:
   _DB_USER: root
   _DB_PASSWORD: Sathi@1993
   _DB_NAME: GenAI
+  SHORT_SHA: ${COMMIT_SHA:0:7}
