@@ -16,5 +16,8 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 3000
 
+# Create a .env file with the PORT environment variable
+RUN echo "PORT=3000" > .env
+
 # Command to run the application
 CMD ["npm", "start"]
